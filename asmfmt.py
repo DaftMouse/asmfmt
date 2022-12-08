@@ -10,6 +10,7 @@ class TokenType(Enum):
     COLON = "COLON"
     NUMBER = "NUMBER"
     INSTRUCTION = "INSTRUCTION"
+    NEWLINE = "NEWLINE"
     EOF = "EOF"
 
 
@@ -54,6 +55,9 @@ class Tokenizer:
     def next_token(self):
         if self.cur_char == '\0':
             return Token(TokenType.EOF)
+        elif self.cur_char == '\n':
+            self.eat()
+            return Token(TokenType.NEWLINE)
 
         # skip whitespaces
         while self.cur_char.isspace():

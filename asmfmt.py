@@ -1,5 +1,7 @@
 import sys
+import os
 from enum import Enum
+import json
 
 
 class TokenType(Enum):
@@ -7,6 +9,7 @@ class TokenType(Enum):
     COMMA = "COMMA"
     COLON = "COLON"
     NUMBER = "NUMBER"
+    INSTRUCTION = "INSTRUCTION"
     EOF = "EOF"
 
 
@@ -16,7 +19,7 @@ class Token:
         self.ident = ident
 
     def __str__(self):
-        if self._type in [TokenType.IDENT, TokenType.NUMBER]:
+        if self._type in [TokenType.IDENT, TokenType.NUMBER, TokenType.INSTRUCTION]:
             return f"{self._type}({self.ident})"
 
         return str(self._type)
@@ -27,6 +30,11 @@ class Tokenizer:
         self.input_file = input_file
         self.cur_char = input_file.read(1)
         self.peek_char = input_file.read(1)
+
+        ins_path = os.path.dirname(os.path.abspath(__file__))
+        ins_path = os.path.join(ins_path, "instructions.json")
+        with open(ins_path) as f:
+            self.instruction_set = json.loads(f.read())
 
     def eat(self):
         """
@@ -40,6 +48,9 @@ class Tokenizer:
         else:
             self.peek_char = c
 
+    def is_instruction(self, ident):
+        return ident.upper() in self.instruction_set
+
     def next_token(self):
         if self.cur_char == '\0':
             return Token(TokenType.EOF)
@@ -48,12 +59,15 @@ class Tokenizer:
         while self.cur_char.isspace():
             self.eat()
 
-        # tokenize identifiers
+        # tokenize identifiers and instructions
         if self.cur_char.isalpha():
             ident = ""
             while self.cur_char.isalnum():
                 ident += self.cur_char
                 self.eat()
+
+            if self.is_instruction(ident):
+                return Token(TokenType.INSTRUCTION, ident)
 
             return Token(TokenType.IDENT, ident)
 

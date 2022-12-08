@@ -100,21 +100,77 @@ class Tokenizer:
         print(f"Unexpected {self.cur_char}")
         exit(1)
 
+class Instruction:
+    def __init__(self, instruction, operands):
+        self.instruction = instruction
+        self.operands = operands
 
-def parse_file(file):
-    t = Tokenizer(file)
+    def __str__(self):
+        return f"{self.instruction.ident} {self.operands}"
 
-    tok = t.next_token()
-    while tok._type != TokenType.EOF:
-        print(tok)
-        tok = t.next_token()
+class SourceLine:
+    def __init__(self, label, instruction, comment):
+        self.label = label
+        self.instruction = instruction
+        self.comment = comment
+
+    def __str__(self):
+        return f"{self.label}:\t{self.instruction}\t{self.comment}"
+
+class Parser:
+    def __init__(self, input_file):
+        self.tokenizer = Tokenizer(input_file)
+        self.cur_token = self.tokenizer.next_token()
+        self.peek_token = self.tokenizer.next_token()
+        self.parsed_lines = []
+
+    def eat(self):
+        self.cur_token = self.peek_token
+        self.peek_token = self.tokenizer.next_token()
+
+    def parse_instruction(self):
+        # TODO
+        ins = self.cur_token
+        self.eat()
+
+        while self.cur_token._type not in [TokenType.NEWLINE, TokenType.EOF]:
+            self.eat()
+
+        return Instruction(ins, [])
+
+    def parse_line(self):
+        label = None
+        instruction = None
+        comment = None
+
+        while True:
+            match self.cur_token._type:
+                case TokenType.IDENT:
+                    label = self.cur_token
+                    self.eat()
+                case TokenType.INSTRUCTION:
+                    instruction = self.parse_instruction()
+                case TokenType.NEWLINE | TokenType.EOF:
+                    self.eat()
+                    break
+                case _:
+                    print(f"Unexpected token {self.cur_token}")
+                    exit(1)
+
+        return SourceLine(label, instruction, comment)
+
+    def parse(self):
+        while self.cur_token._type != TokenType.EOF:
+            line = self.parse_line()
+            print(line)
 
 
 def main(args):
     file = args[0]
 
     with open(file) as f:
-        ast = parse_file(f)
+        p = Parser(f)
+        ast = p.parse()
 
 
 if __name__ == '__main__':

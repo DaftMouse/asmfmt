@@ -100,13 +100,37 @@ class Tokenizer:
         print(f"Unexpected {self.cur_char}")
         exit(1)
 
+
 class Instruction:
     def __init__(self, instruction, operands):
         self.instruction = instruction
         self.operands = operands
 
     def __str__(self):
-        return f"{self.instruction.ident} {self.operands}"
+        # the __str__ method for lists calls __repr__ on the items instead
+        # of __str__ so convert it here before passing it to the f string
+        ops = []
+        for op in self.operands:
+            ops.append(str(op))
+
+        return f"{self.instruction.ident} {ops}"
+
+
+class IdentExpression:
+    def __init__(self, ident):
+        self.ident = ident
+
+    def __str__(self):
+        return f"IdentExpression({self.ident})"
+
+
+class NumberExpression:
+    def __init__(self, number):
+        self.number = number
+
+    def __str__(self):
+        return f"NumberExpression({self.number})"
+
 
 class SourceLine:
     def __init__(self, label, instruction, comment):
@@ -116,6 +140,7 @@ class SourceLine:
 
     def __str__(self):
         return f"{self.label}:\t{self.instruction}\t{self.comment}"
+
 
 class Parser:
     def __init__(self, input_file):
@@ -128,15 +153,35 @@ class Parser:
         self.cur_token = self.peek_token
         self.peek_token = self.tokenizer.next_token()
 
+    def parse_expression(self):
+        expr = None
+
+        match self.cur_token._type:
+            case TokenType.IDENT:
+                expr = IdentExpression(self.cur_token.ident)
+                self.eat()
+            case TokenType.NUMBER:
+                expr = NumberExpression(self.cur_token.ident)
+                self.eat()
+            case _:
+                print(f"Unexpected {self.cur_token}")
+                exit(1)
+
+        return expr
+
     def parse_instruction(self):
         # TODO
         ins = self.cur_token
         self.eat()
 
+        operands = []
         while self.cur_token._type not in [TokenType.NEWLINE, TokenType.EOF]:
-            self.eat()
+            operands.append(self.parse_expression())
 
-        return Instruction(ins, [])
+            if self.cur_token._type == TokenType.COMMA:
+                self.eat()
+
+        return Instruction(ins, operands)
 
     def parse_line(self):
         label = None

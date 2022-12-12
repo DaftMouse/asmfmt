@@ -2,6 +2,7 @@ import sys
 import os
 from enum import Enum
 import json
+import math
 
 
 class TokenType(Enum):
@@ -116,20 +117,31 @@ class Instruction:
         return f"{self.instruction.ident} {ops}"
 
 
-class IdentExpression:
+class Expression:
+    def format(self):
+        raise NotImplementedError
+
+
+class IdentExpression(Expression):
     def __init__(self, ident):
         self.ident = ident
 
     def __str__(self):
         return f"IdentExpression({self.ident})"
 
+    def format(self):
+        return self.ident
 
-class NumberExpression:
+
+class NumberExpression(Expression):
     def __init__(self, number):
         self.number = number
 
     def __str__(self):
         return f"NumberExpression({self.number})"
+
+    def format(self):
+        return self.number
 
 
 class SourceLine:
@@ -181,7 +193,7 @@ class Parser:
             if self.cur_token._type == TokenType.COMMA:
                 self.eat()
 
-        return Instruction(ins, operands)
+        return Instruction(ins.ident, operands)
 
     def parse_line(self):
         label = None
@@ -205,9 +217,44 @@ class Parser:
         return SourceLine(label, instruction, comment)
 
     def parse(self):
+        lines = []
         while self.cur_token._type != TokenType.EOF:
-            line = self.parse_line()
-            print(line)
+            lines.append(self.parse_line())
+
+        return lines
+
+
+class Writer:
+    def __init__(self, lines):
+        self.lines = lines
+
+    def format_instruction(self, instruction):
+        return f"{instruction.instruction}"
+
+    def format_expression(self, expr):
+        return expr.format()
+
+    def format_line(self, line):
+        formatted = " " * 8
+
+        if line.instruction:
+            ins_text = self.format_instruction(line.instruction)
+
+            formatted += ins_text
+            formatted += " " * (8 - len(ins_text))
+
+            for i, op in enumerate(line.instruction.operands):
+                formatted += self.format_expression(op)
+
+                if i + 1 < len(line.instruction.operands):
+                    formatted += ", "
+
+        return formatted
+
+    def write_to_stdout(self):
+        for l in self.lines:
+            sys.stdout.write(self.format_line(l))
+            sys.stdout.write('\n')
 
 
 def main(args):
@@ -215,7 +262,9 @@ def main(args):
 
     with open(file) as f:
         p = Parser(f)
-        ast = p.parse()
+        lines = p.parse()
+        w = Writer(lines)
+        w.write_to_stdout()
 
 
 if __name__ == '__main__':

@@ -16,9 +16,10 @@ class TokenType(Enum):
 
 
 class Token:
-    def __init__(self, _type, ident=""):
+    def __init__(self, _type, location, ident=""):
         self._type = _type
         self.ident = ident
+        self.location = location
 
     def __str__(self):
         if self._type in [TokenType.IDENT, TokenType.NUMBER, TokenType.INSTRUCTION]:
@@ -32,6 +33,8 @@ class Tokenizer:
         self.input_file = input_file
         self.cur_char = input_file.read(1)
         self.peek_char = input_file.read(1)
+        self.cur_line = 1
+        self.cur_col = 0
 
         ins_path = os.path.dirname(os.path.abspath(__file__))
         ins_path = os.path.join(ins_path, "instructions.json")
@@ -43,6 +46,12 @@ class Tokenizer:
         Replaces cur_char with peek_char and reads the next char into peek_char,
         if EOF is reached then peek_char is set to NULL
         """
+        if self.cur_char == '\n':
+            self.cur_line += 1
+            self.cur_col = 0
+        else:
+            self.cur_col += 1
+
         self.cur_char = self.peek_char
         c = self.input_file.read(1)
         if not c:
@@ -53,12 +62,15 @@ class Tokenizer:
     def is_instruction(self, ident):
         return ident.upper() in self.instruction_set
 
+    def make_token(self, _type, ident=""):
+        return Token(_type, (self.cur_line, self.cur_col), ident)
+
     def next_token(self):
         if self.cur_char == '\0':
-            return Token(TokenType.EOF)
+            return self.make_token(TokenType.EOF)
         elif self.cur_char == '\n':
             self.eat()
-            return Token(TokenType.NEWLINE)
+            return self.make_token(TokenType.NEWLINE)
 
         # skip whitespaces
         while self.cur_char.isspace():
@@ -72,9 +84,9 @@ class Tokenizer:
                 self.eat()
 
             if self.is_instruction(ident):
-                return Token(TokenType.INSTRUCTION, ident)
+                return self.make_token(TokenType.INSTRUCTION, ident)
 
-            return Token(TokenType.IDENT, ident)
+            return self.make_token(TokenType.IDENT, ident)
 
         # tokenize numbers
         if self.cur_char.isnumeric():
@@ -84,21 +96,22 @@ class Tokenizer:
                 ident += self.cur_char
                 self.eat()
 
-            return Token(TokenType.NUMBER, ident)
+            return self.make_token(TokenType.NUMBER, ident)
 
         # single char tokens
         tok = None
         match self.cur_char:
             case ':':
-                tok = Token(TokenType.COLON)
+                tok = self.make_token(TokenType.COLON)
             case ',':
-                tok = Token(TokenType.COMMA)
+                tok = self.make_token(TokenType.COMMA)
 
         if tok:
             self.eat()
             return tok
 
-        print(f"Unexpected {self.cur_char}")
+        print(
+            f"Unexpected {self.cur_char} on line {self.cur_line}, col {self.cur_col}")
         exit(1)
 
 
@@ -176,7 +189,8 @@ class Parser:
                 expr = NumberExpression(self.cur_token.ident)
                 self.eat()
             case _:
-                print(f"Unexpected {self.cur_token}")
+                print(
+                    f"Unexpected token {self.cur_token} at {self.cur_token.location}")
                 exit(1)
 
         return expr
@@ -211,7 +225,8 @@ class Parser:
                     self.eat()
                     break
                 case _:
-                    print(f"Unexpected token {self.cur_token}")
+                    print(
+                        f"Unexpected token {self.cur_token} at {self.cur_token.location}")
                     exit(1)
 
         return SourceLine(label, instruction, comment)

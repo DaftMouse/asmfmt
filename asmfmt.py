@@ -13,6 +13,8 @@ class TokenType(Enum):
     INSTRUCTION = "INSTRUCTION"
     NEWLINE = "NEWLINE"
     EOF = "EOF"
+    OPEN_BRACKET = "OPEN_BRACKET"
+    CLOSE_BRACKET = "CLOSE_BRACKET"
 
 
 class Token:
@@ -105,6 +107,10 @@ class Tokenizer:
                 tok = self.make_token(TokenType.COLON)
             case ',':
                 tok = self.make_token(TokenType.COMMA)
+            case '[':
+                tok = self.make_token(TokenType.OPEN_BRACKET)
+            case ']':
+                tok = self.make_token(TokenType.CLOSE_BRACKET)
 
         if tok:
             self.eat()
@@ -113,6 +119,19 @@ class Tokenizer:
         print(
             f"Unexpected {self.cur_char} on line {self.cur_line}, col {self.cur_col}")
         exit(1)
+
+
+class Directive:
+    def __init__(self, directive, args):
+        self.directive = directive
+        self.args = args
+
+    def __str__(self):
+        args = []
+        for a in self.args:
+            args.append(str(a))
+
+        return f"Directive({self.directive}, [{args}])"
 
 
 class Instruction:
@@ -127,7 +146,7 @@ class Instruction:
         for op in self.operands:
             ops.append(str(op))
 
-        return f"{self.instruction.ident} {ops}"
+        return f"{self.instruction} {ops}"
 
 
 class Expression:
@@ -209,10 +228,39 @@ class Parser:
 
         return Instruction(ins.ident, operands)
 
+    def parse_directive(self):
+        self.eat()  # [
+
+        if self.cur_token._type != TokenType.IDENT:
+            print(
+                f"Expected identifier, found {self.cur_token} at {self.cur_token.location}")
+            exit(1)
+
+        directive = self.cur_token.ident
+        self.eat()
+
+        args = []
+        while self.cur_token._type not in [TokenType.CLOSE_BRACKET, TokenType.EOF, TokenType.NEWLINE]:
+            args.append(self.cur_token)
+            self.eat()
+
+        self.eat()  # ]
+        return Directive(directive, args)
+
     def parse_line(self):
         label = None
         instruction = None
         comment = None
+
+        if self.cur_token._type == TokenType.OPEN_BRACKET:
+            d = self.parse_directive()
+
+            # Putting this in an if here because I'm not sure
+            # if a newline is required by NASM after a directive
+            if self.cur_token._type == TokenType.NEWLINE:
+                self.eat()
+
+            return d
 
         while True:
             match self.cur_token._type:
@@ -234,7 +282,9 @@ class Parser:
     def parse(self):
         lines = []
         while self.cur_token._type != TokenType.EOF:
-            lines.append(self.parse_line())
+            l = self.parse_line()
+            print(l)
+            lines.append(l)
 
         return lines
 

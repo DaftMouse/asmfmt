@@ -15,6 +15,7 @@ class TokenType(Enum):
     EOF = "EOF"
     OPEN_BRACKET = "OPEN_BRACKET"
     CLOSE_BRACKET = "CLOSE_BRACKET"
+    COMMENT = "COMMENT"
 
 
 class Token:
@@ -112,6 +113,17 @@ class Tokenizer:
             case ']':
                 tok = self.make_token(TokenType.CLOSE_BRACKET)
 
+        # comments
+        if self.cur_char == ';':
+            comment = ""
+            self.eat()  # ;
+            while self.cur_char != '\n':
+                comment += self.cur_char
+                self.eat()
+
+            tok =  self.make_token(TokenType.COMMENT, comment)
+            self.eat()  # \n
+
         if tok:
             self.eat()
             return tok
@@ -148,6 +160,12 @@ class Instruction:
 
         return f"{self.instruction} {ops}"
 
+class Comment:
+    def __init__(self, comment):
+        self.comment = comment
+
+    def __str__(self):
+        return f"Comment({self.comment})"
 
 class Expression:
     def format(self):
@@ -220,11 +238,10 @@ class Parser:
         self.eat()
 
         operands = []
-        while self.cur_token._type not in [TokenType.NEWLINE, TokenType.EOF]:
+        operands.append(self.parse_expression())
+        while self.cur_token._type == TokenType.COMMA:
+            self.eat()
             operands.append(self.parse_expression())
-
-            if self.cur_token._type == TokenType.COMMA:
-                self.eat()
 
         return Instruction(ins.ident, operands)
 
@@ -248,10 +265,6 @@ class Parser:
         return Directive(directive, args)
 
     def parse_line(self):
-        label = None
-        instruction = None
-        comment = None
-
         if self.cur_token._type == TokenType.OPEN_BRACKET:
             d = self.parse_directive()
 
@@ -262,22 +275,20 @@ class Parser:
 
             return d
 
-        while True:
-            match self.cur_token._type:
-                case TokenType.IDENT:
-                    label = self.cur_token
-                    self.eat()
-                case TokenType.INSTRUCTION:
-                    instruction = self.parse_instruction()
-                case TokenType.NEWLINE | TokenType.EOF:
-                    self.eat()
-                    break
-                case _:
-                    print(
-                        f"Unexpected token {self.cur_token} at {self.cur_token.location}")
-                    exit(1)
+        instruction = None
+        if self.cur_token._type == TokenType.INSTRUCTION:
+            instruction = self.parse_instruction()
 
-        return SourceLine(label, instruction, comment)
+        comment = None
+        if self.cur_token._type == TokenType.COMMENT:
+            comment = Comment(self.cur_token.ident)
+            self.eat()
+
+        if not (instruction and comment):
+            print(f"Unexpected token {self.cur_token} at {self.cur_token.location}")
+            exit(1)
+
+        return SourceLine(None, instruction, comment)
 
     def parse(self):
         lines = []

@@ -15,7 +15,6 @@
         mov     ax,1100_1000y   ; same binary constant once more
         mov     ax,0b1100_1000  ; same binary constant yet again
         mov     ax,0y1100_1000  ; same binary constant yet again
-
 lodsb
 mov eax, 1
 mov ebx,2

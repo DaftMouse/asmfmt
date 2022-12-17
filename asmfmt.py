@@ -17,7 +17,6 @@ class TokenType(Enum):
     CLOSE_BRACKET = "CLOSE_BRACKET"
     COMMENT = "COMMENT"
 
-
 class Token:
     def __init__(self, _type, location, ident=""):
         self._type = _type
@@ -65,8 +64,37 @@ class Tokenizer:
     def is_instruction(self, ident):
         return ident.upper() in self.instruction_set
 
+    def current_location(self):
+        return (self.cur_line, self.cur_col)
+
     def make_token(self, _type, ident=""):
-        return Token(_type, (self.cur_line, self.cur_col), ident)
+        return Token(_type, self.current_location(), ident)
+
+    def tokenize_number(self):
+        ident = ""
+
+        # $0 prefix
+        if self.cur_char == '$' and self.peek_char == '0':
+            ident += self.cur_char + self.peek_char
+            self.eat()  # $
+            self.eat()  # 0
+
+        # prefix
+        if self.cur_char == '0' and self.peek_char in ['d', 'x', 'h', 'o', 'q', 'b', 'y']:
+            ident += self.cur_char + self.peek_char
+            self.eat()  # 0
+            self.eat()  # d | x | h | o | q | b | y
+
+        while self.cur_char.isnumeric() or self.cur_char.upper() in ['A', 'B', 'C', 'D', 'E', 'F', '_']:
+            ident += self.cur_char
+            self.eat()
+
+        # postfix
+        if self.cur_char in ['d', 'h', 'q', 'o', 'b', 'y']:
+            ident += self.cur_char
+            self.eat()  #  d | h | q | o | b | y
+
+        return self.make_token(TokenType.NUMBER, ident)
 
     def next_token(self):
         if self.cur_char == '\0':
@@ -92,14 +120,8 @@ class Tokenizer:
             return self.make_token(TokenType.IDENT, ident)
 
         # tokenize numbers
-        if self.cur_char.isnumeric():
-            # TODO: actually parse it into a number
-            ident = ""
-            while self.cur_char.isnumeric():
-                ident += self.cur_char
-                self.eat()
-
-            return self.make_token(TokenType.NUMBER, ident)
+        if self.cur_char.isnumeric() or (self.cur_char == '$' and self.peek_char == '0'):
+            return self.tokenize_number()
 
         # single char tokens
         tok = None
@@ -123,6 +145,7 @@ class Tokenizer:
 
             tok =  self.make_token(TokenType.COMMENT, comment)
             self.eat()  # \n
+            return tok
 
         if tok:
             self.eat()
@@ -237,6 +260,10 @@ class Parser:
         ins = self.cur_token
         self.eat()
 
+        # no operands
+        if self.cur_token._type in [TokenType.NEWLINE, TokenType.COMMENT]:
+            return Instruction(ins.ident, [])
+
         operands = []
         operands.append(self.parse_expression())
         while self.cur_token._type == TokenType.COMMA:
@@ -284,7 +311,10 @@ class Parser:
             comment = Comment(self.cur_token.ident)
             self.eat()
 
-        if not (instruction and comment):
+        if self.cur_token._type == TokenType.NEWLINE:
+            self.eat()
+
+        if not instruction and not comment:
             print(f"Unexpected token {self.cur_token} at {self.cur_token.location}")
             exit(1)
 
@@ -294,7 +324,6 @@ class Parser:
         lines = []
         while self.cur_token._type != TokenType.EOF:
             l = self.parse_line()
-            print(l)
             lines.append(l)
 
         return lines

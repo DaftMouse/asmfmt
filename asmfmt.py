@@ -139,6 +139,15 @@ class Tokenizer:
         if self.cur_char == ';':
             comment = ""
             self.eat()  # ;
+
+            # Skip whitespaces between ; and start of comment
+            # FIXME: this might break some fancy multiline comments that
+            # build some sort of ascii art to explain things, the way to
+            # avoid that would be having special coments that can turn the
+            # formatter on/off like clang-format's // clang-format on/off
+            while self.cur_char == ' ':
+                self.eat()
+
             while self.cur_char != '\n':
                 comment += self.cur_char
                 self.eat()

@@ -190,6 +190,9 @@ class Comment:
     def __str__(self):
         return f"Comment({self.comment})"
 
+    def format(self):
+        return f"; {self.comment}"
+
 class Expression:
     def format(self):
         raise NotImplementedError
@@ -332,12 +335,24 @@ class Parser:
 class Writer:
     def __init__(self, lines):
         self.lines = lines
+        self.formatted_lines = []
+        self.longest_line_length = 0
 
     def format_instruction(self, instruction):
         return f"{instruction.instruction}"
 
     def format_expression(self, expr):
         return expr.format()
+
+    def format_lines(self):
+        self.formatted_lines = []
+        for l in self.lines:
+            f = self.format_line(l)
+
+            if len(f) > self.longest_line_length:
+                self.longest_line_length = len(f)
+
+            self.formatted_lines.append(f)
 
     def format_line(self, line):
         formatted = " " * 8
@@ -356,9 +371,27 @@ class Writer:
 
         return formatted
 
+    def add_comments(self):
+        comment_col = self.longest_line_length + 2
+
+        assert len(self.formatted_lines) == len(self.lines)
+
+        for i in range(0, len(self.formatted_lines)):
+            if not self.lines[i].comment:
+                continue
+
+            extra_spaces = comment_col - len(self.formatted_lines[i])
+            extra_spaces = ' ' * extra_spaces
+            self.formatted_lines[i] += extra_spaces
+
+            self.formatted_lines[i] += self.lines[i].comment.format()
+
     def write_to_stdout(self):
-        for l in self.lines:
-            sys.stdout.write(self.format_line(l))
+        self.format_lines()
+        self.add_comments()
+
+        for l in self.formatted_lines:
+            sys.stdout.write(l)
             sys.stdout.write('\n')
 
 

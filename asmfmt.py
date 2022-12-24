@@ -316,6 +316,14 @@ class Parser:
 
             return d
 
+        label = None
+        if self.cur_token._type == TokenType.IDENT:
+            label = self.cur_token.ident
+
+            self.eat()
+            if self.cur_token._type == TokenType.COLON:
+                self.eat()
+
         instruction = None
         if self.cur_token._type == TokenType.INSTRUCTION:
             instruction = self.parse_instruction()
@@ -328,7 +336,7 @@ class Parser:
         if self.cur_token._type == TokenType.NEWLINE:
             self.eat()
 
-        return SourceLine(None, instruction, comment)
+        return SourceLine(label, instruction, comment)
 
     def parse(self):
         lines = []
@@ -362,7 +370,19 @@ class Writer:
             self.formatted_lines.append(f)
 
     def format_line(self, line):
-        formatted = " " * 8
+        formatted = ""
+
+        if line.label:
+            formatted += line.label
+            formatted += ':'
+
+            if len(line.label) >= 8:
+                formatted += "  "
+            else:
+                formatted += " " * (8 - (len(line.label) + 1))
+
+        else:
+            formatted += " " * 8
 
         if line.instruction:
             ins_text = self.format_instruction(line.instruction)

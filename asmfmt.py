@@ -17,6 +17,7 @@ class TokenType(Enum):
     CLOSE_BRACKET = "CLOSE_BRACKET"
     COMMENT = "COMMENT"
 
+
 class Token:
     def __init__(self, _type, location, ident=""):
         self._type = _type
@@ -92,7 +93,7 @@ class Tokenizer:
         # postfix
         if self.cur_char in ['d', 'h', 'q', 'o', 'b', 'y']:
             ident += self.cur_char
-            self.eat()  #  d | h | q | o | b | y
+            self.eat()  # d | h | q | o | b | y
 
         return self.make_token(TokenType.NUMBER, ident)
 
@@ -135,7 +136,7 @@ class Tokenizer:
             case ']':
                 tok = self.make_token(TokenType.CLOSE_BRACKET)
 
-        # comments
+        # tokenize comments
         if self.cur_char == ';':
             comment = ""
             self.eat()  # ;
@@ -152,8 +153,7 @@ class Tokenizer:
                 comment += self.cur_char
                 self.eat()
 
-            tok =  self.make_token(TokenType.COMMENT, comment)
-            self.eat()  # \n
+            tok = self.make_token(TokenType.COMMENT, comment)
             return tok
 
         if tok:
@@ -192,6 +192,7 @@ class Instruction:
 
         return f"{self.instruction} {ops}"
 
+
 class Comment:
     def __init__(self, comment):
         self.comment = comment
@@ -201,6 +202,7 @@ class Comment:
 
     def format(self):
         return f"; {self.comment}"
+
 
 class Expression:
     def format(self):
@@ -325,10 +327,6 @@ class Parser:
 
         if self.cur_token._type == TokenType.NEWLINE:
             self.eat()
-
-        if not instruction and not comment:
-            print(f"Unexpected token {self.cur_token} at {self.cur_token.location}")
-            exit(1)
 
         return SourceLine(None, instruction, comment)
 

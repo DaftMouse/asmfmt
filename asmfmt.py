@@ -315,6 +315,9 @@ class Parser:
                 self.eat()
 
             return d
+        elif self.cur_token._type == TokenType.NEWLINE:
+            self.eat()
+            return SourceLine(None, None, None)
 
         label = None
         if self.cur_token._type == TokenType.IDENT:
@@ -335,6 +338,11 @@ class Parser:
 
         if self.cur_token._type == TokenType.NEWLINE:
             self.eat()
+
+        if label is None and comment is None and instruction is None:
+            print(
+                f"Unexpected token {self.cur_token} at {self.cur_token.location}")
+            exit(1)
 
         return SourceLine(label, instruction, comment)
 

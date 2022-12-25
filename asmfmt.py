@@ -97,6 +97,12 @@ class Tokenizer:
 
         return self.make_token(TokenType.NUMBER, ident)
 
+    def is_ident_stater(self, char):
+        return char.isalpha() or char == '.'
+
+    def is_ident_char(self, char):
+        return char.isalnum()
+
     def next_token(self):
         if self.cur_char == '\0':
             return self.make_token(TokenType.EOF)
@@ -109,9 +115,12 @@ class Tokenizer:
             self.eat()
 
         # tokenize identifiers and instructions
-        if self.cur_char.isalpha():
+        if self.is_ident_stater(self.cur_char):
             ident = ""
-            while self.cur_char.isalnum():
+            ident += self.cur_char
+            self.eat()
+
+            while self.is_ident_char(self.cur_char):
                 ident += self.cur_char
                 self.eat()
 
@@ -166,16 +175,12 @@ class Tokenizer:
 
 
 class Directive:
-    def __init__(self, directive, args):
+    def __init__(self, directive, arg):
         self.directive = directive
-        self.args = args
+        self.arg = arg
 
     def __str__(self):
-        args = []
-        for a in self.args:
-            args.append(str(a))
-
-        return f"Directive({self.directive}, [{args}])"
+        return f"Directive({self.directive}, [{self.arg}])"
 
 
 class Instruction:
@@ -236,8 +241,12 @@ class SourceLine:
         self.label = label
         self.instruction = instruction
         self.comment = comment
+        self.directive = None
 
     def __str__(self):
+        if self.directive:
+            return f"{self.directive}"
+
         return f"{self.label}:\t{self.instruction}\t{self.comment}"
 
 
@@ -297,13 +306,14 @@ class Parser:
         directive = self.cur_token.ident
         self.eat()
 
-        args = []
-        while self.cur_token._type not in [TokenType.CLOSE_BRACKET, TokenType.EOF, TokenType.NEWLINE]:
-            args.append(self.cur_token)
-            self.eat()
+        arg = self.parse_expression()
+
+        if self.cur_token._type != TokenType.CLOSE_BRACKET:
+            print(
+                f"Expected ] found {self.cur_token} at {self.cur_token.location}")
 
         self.eat()  # ]
-        return Directive(directive, args)
+        return Directive(directive, arg)
 
     def parse_line(self):
         if self.cur_token._type == TokenType.OPEN_BRACKET:
@@ -314,7 +324,9 @@ class Parser:
             if self.cur_token._type == TokenType.NEWLINE:
                 self.eat()
 
-            return d
+            s = SourceLine(None, None, None)
+            s.directive = d
+            return s
         elif self.cur_token._type == TokenType.NEWLINE:
             self.eat()
             return SourceLine(None, None, None)
@@ -377,8 +389,15 @@ class Writer:
 
             self.formatted_lines.append(f)
 
+    def format_directive(self, directive):
+        return f"[{directive.directive} {self.format_expression(directive.arg)}]"
+
     def format_line(self, line):
         formatted = ""
+
+#        print(line)
+        if line.directive:
+            return self.format_directive(line.directive)
 
         if line.label:
             formatted += line.label

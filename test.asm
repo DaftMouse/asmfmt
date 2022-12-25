@@ -1,3 +1,7 @@
+[SECTION    .data]
+
+[ SECTION .text  ]
+
         mov     ax,200          ; decimal
         mov     ax,0200         ; still decimal
         mov     ax,0200d        ; explicitly decimal

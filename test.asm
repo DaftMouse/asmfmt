@@ -25,3 +25,10 @@ lodsb
 mov eax, 1
 mov ebx,2
 call something
+
+
+mov si, src
+mov di, dst
+mov cx, 0x4
+cld
+rep movsb

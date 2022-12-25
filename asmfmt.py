@@ -16,6 +16,7 @@ class TokenType(Enum):
     OPEN_BRACKET = "OPEN_BRACKET"
     CLOSE_BRACKET = "CLOSE_BRACKET"
     COMMENT = "COMMENT"
+    INSTRUCTION_PREFIX = "INSTRUCTION_PREFIX"
 
 
 class Token:
@@ -42,7 +43,9 @@ class Tokenizer:
         ins_path = os.path.dirname(os.path.abspath(__file__))
         ins_path = os.path.join(ins_path, "instructions.json")
         with open(ins_path) as f:
-            self.instruction_set = json.loads(f.read())
+            j = json.loads(f.read())
+            self.instruction_set = j["instructions"]
+            self.prefix_set = j["prefixes"]
 
     def eat(self):
         """
@@ -64,6 +67,9 @@ class Tokenizer:
 
     def is_instruction(self, ident):
         return ident.upper() in self.instruction_set
+
+    def is_instruction_prefix(self, ident):
+        return ident.upper() in self.prefix_set
 
     def current_location(self):
         return (self.cur_line, self.cur_col)
@@ -126,6 +132,8 @@ class Tokenizer:
 
             if self.is_instruction(ident):
                 return self.make_token(TokenType.INSTRUCTION, ident)
+            elif self.is_instruction_prefix(ident):
+                return self.make_token(TokenType.INSTRUCTION_PREFIX, ident)
 
             return self.make_token(TokenType.IDENT, ident)
 
@@ -184,9 +192,10 @@ class Directive:
 
 
 class Instruction:
-    def __init__(self, instruction, operands):
+    def __init__(self, instruction, operands, prefix):
         self.instruction = instruction
         self.operands = operands
+        self.prefix = prefix
 
     def __str__(self):
         # the __str__ method for lists calls __repr__ on the items instead
@@ -279,13 +288,17 @@ class Parser:
         return expr
 
     def parse_instruction(self):
-        # TODO
+        prefix = None
+        if self.cur_token._type == TokenType.INSTRUCTION_PREFIX:
+            prefix = self.cur_token
+            self.eat()
+
         ins = self.cur_token
         self.eat()
 
         # no operands
         if self.cur_token._type in [TokenType.NEWLINE, TokenType.COMMENT]:
-            return Instruction(ins.ident, [])
+            return Instruction(ins.ident, [], prefix)
 
         operands = []
         operands.append(self.parse_expression())
@@ -293,7 +306,7 @@ class Parser:
             self.eat()
             operands.append(self.parse_expression())
 
-        return Instruction(ins.ident, operands)
+        return Instruction(ins.ident, operands, prefix)
 
     def parse_directive(self):
         self.eat()  # [
@@ -340,7 +353,7 @@ class Parser:
                 self.eat()
 
         instruction = None
-        if self.cur_token._type == TokenType.INSTRUCTION:
+        if self.cur_token._type in [TokenType.INSTRUCTION, TokenType.INSTRUCTION_PREFIX]:
             instruction = self.parse_instruction()
 
         comment = None
@@ -374,7 +387,13 @@ class Writer:
         self.longest_line_length = 0
 
     def format_instruction(self, instruction):
-        return f"{instruction.instruction}"
+        prefix = ""
+
+        if instruction.prefix:
+            prefix = instruction.prefix.ident
+            prefix += " "
+
+        return f"{prefix}{instruction.instruction}"
 
     def format_expression(self, expr):
         return expr.format()
@@ -415,7 +434,10 @@ class Writer:
             ins_text = self.format_instruction(line.instruction)
 
             formatted += ins_text
-            formatted += " " * (8 - len(ins_text))
+            if len(ins_text) < 8:
+                formatted += " " * (8 - len(ins_text))
+            else:
+                formatted += "  "
 
             for i, op in enumerate(line.instruction.operands):
                 formatted += self.format_expression(op)

@@ -2,7 +2,6 @@ import sys
 import os
 from enum import Enum
 import json
-import math
 
 
 class TokenType(Enum):

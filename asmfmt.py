@@ -3,6 +3,7 @@ import sys
 from asmfmt.parser import Parser
 from asmfmt.writer import Writer
 
+
 def main(args):
     file = args[0]
 

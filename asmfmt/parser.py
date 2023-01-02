@@ -1,5 +1,6 @@
 from asmfmt.token import Tokenizer, TokenType
 
+
 class Directive:
     def __init__(self, directive, arg):
         self.directive = directive
@@ -7,6 +8,9 @@ class Directive:
 
     def __str__(self):
         return f"Directive({self.directive}, [{self.arg}])"
+
+    def format(self):
+        return f"[{self.directive} {self.arg.format()}]"
 
 
 class Instruction:
@@ -23,6 +27,15 @@ class Instruction:
             ops.append(str(op))
 
         return f"{self.instruction} {ops}"
+
+    def format(self):
+        prefix = ""
+
+        if self.prefix:
+            prefix = self.prefix.ident
+            prefix += " "
+
+        return f"{prefix}{self.instruction}"
 
 
 class Comment:
@@ -63,18 +76,54 @@ class NumberExpression(Expression):
         return self.number
 
 
-class SourceLine:
+class CodeLine:
     def __init__(self, label, instruction, comment):
         self.label = label
         self.instruction = instruction
         self.comment = comment
-        self.directive = None
 
     def __str__(self):
-        if self.directive:
-            return f"{self.directive}"
-
         return f"{self.label}:\t{self.instruction}\t{self.comment}"
+
+    def format(self):
+        formatted = ""
+
+        if self.label:
+            formatted += self.label
+            formatted += ':'
+
+            if len(self.label) >= 8:
+                formatted += "  "
+            else:
+                formatted += " " * (8 - (len(self.label) + 1))
+
+        else:
+            formatted += " " * 8
+
+        if self.instruction:
+            ins_text = self.instruction.format()
+
+            formatted += ins_text
+            if len(ins_text) < 8:
+                formatted += " " * (8 - len(ins_text))
+            else:
+                formatted += "  "
+
+            for i, op in enumerate(self.instruction.operands):
+                formatted += op.format()
+
+                if i + 1 < len(self.instruction.operands):
+                    formatted += ", "
+
+        return formatted
+
+
+class DirectiveLine:
+    def __init__(self, directive):
+        self.directive = directive
+
+    def format(self):
+        return self.directive.format() + "\n"
 
 
 class Parser:
@@ -155,12 +204,10 @@ class Parser:
             if self.cur_token._type == TokenType.NEWLINE:
                 self.eat()
 
-            s = SourceLine(None, None, None)
-            s.directive = d
-            return s
+            return DirectiveLine(d)
         elif self.cur_token._type == TokenType.NEWLINE:
             self.eat()
-            return SourceLine(None, None, None)
+            return CodeLine(None, None, None)
 
         label = None
         if self.cur_token._type == TokenType.IDENT:
@@ -187,7 +234,7 @@ class Parser:
                 f"Unexpected token {self.cur_token} at {self.cur_token.location}")
             exit(1)
 
-        return SourceLine(label, instruction, comment)
+        return CodeLine(label, instruction, comment)
 
     def parse(self):
         lines = []

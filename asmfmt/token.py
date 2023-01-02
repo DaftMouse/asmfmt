@@ -2,6 +2,7 @@ from enum import Enum
 import json
 import os
 
+
 class TokenType(Enum):
     IDENT = "IDENT"
     COMMA = "COMMA"

@@ -42,8 +42,8 @@ class Tokenizer:
         ins_path = os.path.join(ins_path, "..", "instructions.json")
         with open(ins_path) as f:
             j = json.loads(f.read())
-            self.instruction_set = j["instructions"]
-            self.prefix_set = j["prefixes"]
+            self.instruction_set = j["instructions"] + j["nasm_instructions"]
+            self.prefix_set = j["prefixes"] + j["nasm_prefixes"]
 
     def eat(self):
         """

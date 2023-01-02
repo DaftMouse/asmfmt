@@ -1,5 +1,12 @@
 [SECTION    .data]
 
+numbers: dd 123, 312, 123123123
+src: dq 123
+
+[SECTION .bss]
+
+dst: resq 1
+
 [ SECTION .text  ]
 
         mov     ax,200          ; decimal

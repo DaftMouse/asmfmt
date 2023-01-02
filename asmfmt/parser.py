@@ -123,7 +123,7 @@ class DirectiveLine:
         self.directive = directive
 
     def format(self):
-        return self.directive.format() + "\n"
+        return self.directive.format()
 
 
 class Parser:

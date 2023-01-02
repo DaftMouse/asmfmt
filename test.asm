@@ -2,6 +2,7 @@
 
 numbers: dd 123, 312, 123123123
 src: dq 123
+stuff: times 100 db 0
 
 [SECTION .bss]
 

@@ -13,6 +13,23 @@ class Directive:
         return f"[{self.directive} {self.arg.format()}]"
 
 
+class InstructionPrefix:
+    def __init__(self, prefix):
+        self.prefix = prefix
+
+    def format(self):
+        return self.prefix
+
+
+class NASMTimesPrefix(InstructionPrefix):
+    def __init__(self, arg):
+        super().__init__("times")
+        self.arg = arg
+
+    def format(self):
+        return f"times {self.arg.format()}"
+
+
 class Instruction:
     def __init__(self, instruction, operands, prefix):
         self.instruction = instruction
@@ -32,7 +49,7 @@ class Instruction:
         prefix = ""
 
         if self.prefix:
-            prefix = self.prefix.ident
+            prefix = self.prefix.format()
             prefix += " "
 
         return f"{prefix}{self.instruction}"
@@ -154,11 +171,20 @@ class Parser:
 
         return expr
 
+    def parse_prefix(self):
+        if self.cur_token.ident.upper() == "TIMES":
+            self.eat()
+            arg = self.parse_expression()
+            return NASMTimesPrefix(arg)
+
+        prefix = self.cur_token.ident
+        self.eat()
+        return InstructionPrefix(prefix)
+
     def parse_instruction(self):
         prefix = None
         if self.cur_token._type == TokenType.INSTRUCTION_PREFIX:
-            prefix = self.cur_token
-            self.eat()
+            prefix = self.parse_prefix()
 
         ins = self.cur_token
         self.eat()

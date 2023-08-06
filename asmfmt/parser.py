@@ -1,5 +1,10 @@
-from .token import Tokenizer, TokenType
+from .token import Tokenizer, TokenType, Token
 from .items import *
+
+
+class SyntaxErrorException(Exception):
+    def __init__(self, unexpected_token: Token):
+        super().__init__(f"Unexpected token {unexpected_token} at {unexpected_token.location}")
 
 class Parser:
     def __init__(self, input_file):
@@ -23,9 +28,7 @@ class Parser:
                 expr = NumberExpression(self.cur_token.ident)
                 self.eat()
             case _:
-                print(
-                    f"Unexpected token {self.cur_token} at {self.cur_token.location}")
-                exit(1)
+                raise SyntaxErrorException(self.cur_token)
 
         return expr
 
@@ -63,9 +66,7 @@ class Parser:
         self.eat()  # [
 
         if not self.cur_token.is_type(TokenType.IDENT):
-            print(
-                f"Expected identifier, found {self.cur_token} at {self.cur_token.location}")
-            exit(1)
+            raise SyntaxErrorException(self.cur_token)
 
         directive = self.cur_token.ident
         self.eat()
@@ -114,9 +115,7 @@ class Parser:
             self.eat()
 
         if label is None and comment is None and instruction is None:
-            print(
-                f"Unexpected token {self.cur_token} at {self.cur_token.location}")
-            exit(1)
+            raise SyntaxErrorException(self.cur_token)
 
         return CodeLine(label, instruction, comment)
 

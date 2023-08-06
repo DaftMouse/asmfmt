@@ -29,6 +29,9 @@ class Token:
 
         return str(self._type)
 
+    def is_type(self, _type: TokenType) -> bool:
+        return self._type == _type
+
 
 class Tokenizer:
     def __init__(self, input_file):

@@ -41,19 +41,19 @@ class Parser:
 
     def parse_instruction(self):
         prefix = None
-        if self.cur_token._type == TokenType.INSTRUCTION_PREFIX:
+        if self.cur_token.is_type(TokenType.INSTRUCTION_PREFIX):
             prefix = self.parse_prefix()
 
         ins = self.cur_token
         self.eat()
 
         # no operands
-        if self.cur_token._type in [TokenType.NEWLINE, TokenType.COMMENT]:
+        if self.cur_token.is_type(TokenType.NEWLINE) or self.cur_token.is_type(TokenType.COMMENT):
             return Instruction(ins.ident, [], prefix)
 
         operands = []
         operands.append(self.parse_expression())
-        while self.cur_token._type == TokenType.COMMA:
+        while self.cur_token.is_type(TokenType.COMMA):
             self.eat()
             operands.append(self.parse_expression())
 
@@ -62,7 +62,7 @@ class Parser:
     def parse_directive(self):
         self.eat()  # [
 
-        if self.cur_token._type != TokenType.IDENT:
+        if not self.cur_token.is_type(TokenType.IDENT):
             print(
                 f"Expected identifier, found {self.cur_token} at {self.cur_token.location}")
             exit(1)
@@ -72,7 +72,7 @@ class Parser:
 
         arg = self.parse_expression()
 
-        if self.cur_token._type != TokenType.CLOSE_BRACKET:
+        if not self.cur_token.is_type(TokenType.CLOSE_BRACKET):
             print(
                 f"Expected ] found {self.cur_token} at {self.cur_token.location}")
 
@@ -80,37 +80,37 @@ class Parser:
         return Directive(directive, arg)
 
     def parse_line(self):
-        if self.cur_token._type == TokenType.OPEN_BRACKET:
+        if self.cur_token.is_type(TokenType.OPEN_BRACKET):
             d = self.parse_directive()
 
             # Putting this in an if here because I'm not sure
             # if a newline is required by NASM after a directive
-            if self.cur_token._type == TokenType.NEWLINE:
+            if self.cur_token.is_type(TokenType.NEWLINE):
                 self.eat()
 
             return DirectiveLine(d)
-        elif self.cur_token._type == TokenType.NEWLINE:
+        elif self.cur_token.is_type(TokenType.NEWLINE):
             self.eat()
             return CodeLine(None, None, None)
 
         label = None
-        if self.cur_token._type == TokenType.IDENT:
+        if self.cur_token.is_type(TokenType.IDENT):
             label = self.cur_token.ident
 
             self.eat()
-            if self.cur_token._type == TokenType.COLON:
+            if self.cur_token.is_type(TokenType.COLON):
                 self.eat()
 
         instruction = None
-        if self.cur_token._type in [TokenType.INSTRUCTION, TokenType.INSTRUCTION_PREFIX]:
+        if self.cur_token.is_type(TokenType.INSTRUCTION) or self.cur_token.is_type(TokenType.INSTRUCTION_PREFIX):
             instruction = self.parse_instruction()
 
         comment = None
-        if self.cur_token._type == TokenType.COMMENT:
+        if self.cur_token.is_type(TokenType.COMMENT):
             comment = Comment(self.cur_token.ident)
             self.eat()
 
-        if self.cur_token._type == TokenType.NEWLINE:
+        if self.cur_token.is_type(TokenType.NEWLINE):
             self.eat()
 
         if label is None and comment is None and instruction is None:
@@ -122,7 +122,7 @@ class Parser:
 
     def parse(self):
         lines = []
-        while self.cur_token._type != TokenType.EOF:
+        while not self.cur_token.is_type(TokenType.EOF):
             l = self.parse_line()
             lines.append(l)
 

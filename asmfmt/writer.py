@@ -1,5 +1,5 @@
 import sys
-from .parser import CodeLine
+from .items import CodeLine
 
 
 class Writer:

@@ -1,14 +1,14 @@
-[SECTION    .data]
+SECTION    .data
 
 numbers: dd 123, 312, 123123123
 src: dq 123
 stuff: times 100 db 0
 
-[SECTION .bss]
+SECTION .bss
 
 dst: resq 1
 
-[ SECTION .text  ]
+ SECTION .text
 
         mov     ax,200          ; decimal
         mov     ax,0200         ; still decimal

@@ -63,34 +63,20 @@ class Parser:
         return Instruction(ins.ident, operands, prefix)
 
     def parse_directive(self):
-        self.eat()  # [
-
-        if not self.cur_token.is_type(TokenType.IDENT):
-            raise SyntaxErrorException(self.cur_token)
+        assert self.cur_token.is_type(TokenType.DIRECTIVE)
 
         directive = self.cur_token.ident
         self.eat()
 
         arg = self.parse_expression()
 
-        if not self.cur_token.is_type(TokenType.CLOSE_BRACKET):
-            print(
-                f"Expected ] found {self.cur_token} at {self.cur_token.location}")
-
-        self.eat()  # ]
         return Directive(directive, arg)
 
     def parse_line(self):
-        if self.cur_token.is_type(TokenType.OPEN_BRACKET):
-            d = self.parse_directive()
-
-            # Putting this in an if here because I'm not sure
-            # if a newline is required by NASM after a directive
-            if self.cur_token.is_type(TokenType.NEWLINE):
-                self.eat()
-
-            return DirectiveLine(d)
-        elif self.cur_token.is_type(TokenType.NEWLINE):
+        if self.cur_token.is_type(TokenType.DIRECTIVE):
+            return self.parse_directive()
+        
+        if self.cur_token.is_type(TokenType.NEWLINE):
             self.eat()
             return CodeLine(None, None, None)
 

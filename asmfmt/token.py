@@ -15,6 +15,7 @@ class TokenType(Enum):
     CLOSE_BRACKET = "CLOSE_BRACKET"
     COMMENT = "COMMENT"
     INSTRUCTION_PREFIX = "INSTRUCTION_PREFIX"
+    DIRECTIVE = "DIRECTIVE"
 
 
 class Token:
@@ -47,6 +48,7 @@ class Tokenizer:
             j = json.loads(f.read())
             self.instruction_set = j["instructions"] + j["nasm_instructions"]
             self.prefix_set = j["prefixes"] + j["nasm_prefixes"]
+            self.directive_set = j["directives"]
 
     def eat(self):
         """
@@ -71,6 +73,9 @@ class Tokenizer:
 
     def is_instruction_prefix(self, ident):
         return ident.upper() in self.prefix_set
+
+    def is_directive(self, ident):
+        return ident.upper() in self.directive_set
 
     def current_location(self):
         return (self.cur_line, self.cur_col)
@@ -135,6 +140,8 @@ class Tokenizer:
                 return self.make_token(TokenType.INSTRUCTION, ident)
             elif self.is_instruction_prefix(ident):
                 return self.make_token(TokenType.INSTRUCTION_PREFIX, ident)
+            elif self.is_directive(ident):
+                return self.make_token(TokenType.DIRECTIVE, ident)
 
             return self.make_token(TokenType.IDENT, ident)
 

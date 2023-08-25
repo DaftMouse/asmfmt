@@ -19,6 +19,7 @@ class TokenType(Enum):
     COMMENT = "COMMENT"
     INSTRUCTION_PREFIX = "INSTRUCTION_PREFIX"
     DIRECTIVE = "DIRECTIVE"
+    PERCENT = 'PERCENT'
 
 
 class Token:
@@ -163,6 +164,8 @@ class Tokenizer:
                 tok = self.make_token(TokenType.OPEN_BRACKET)
             case ']':
                 tok = self.make_token(TokenType.CLOSE_BRACKET)
+            case '%':
+                tok = self.make_token(TokenType.PERCENT)
 
         # tokenize comments
         if self.cur_char == ';':

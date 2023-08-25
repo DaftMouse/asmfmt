@@ -151,3 +151,12 @@ class DirectiveLine:
 
     def format(self):
         return self.directive.format()
+
+class MacroDefineLine:
+    def __init__(self, name, value):
+        self.name = name
+        self.value = value
+
+    def __str__(self):
+        return f"MacroDefine({self.name}, {self.value})"
+        

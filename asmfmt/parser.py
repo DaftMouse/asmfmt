@@ -17,6 +17,10 @@ class Parser:
         self.cur_token = self.peek_token
         self.peek_token = self.tokenizer.next_token()
 
+    def expect(self, token_type: TokenType):
+        if not self.cur_token.is_type(token_type):
+            raise SyntaxErrorException(self.cur_token)
+
     def parse_expression(self):
         expr = None
 
@@ -70,9 +74,33 @@ class Parser:
 
         arg = self.parse_expression()
 
+        self.expect(TokenType.NEWLINE)
+        self.eat()
         return Directive(directive, arg)
 
+    def parse_macro(self):
+        self.eat() # %
+        self.expect(TokenType.IDENT)
+
+        if self.cur_token.ident == "define":
+            self.eat() # define
+
+            self.expect(TokenType.IDENT)
+            name = self.cur_token.ident
+            self.eat()
+
+            value = self.parse_expression()
+
+            self.expect(TokenType.NEWLINE)
+            self.eat()
+            return MacroDefineLine(name, value)
+
+        return None
+
     def parse_line(self):
+        if self.cur_token.is_type(TokenType.PERCENT):
+            return self.parse_macro()
+        
         if self.cur_token.is_type(TokenType.DIRECTIVE):
             return self.parse_directive()
         

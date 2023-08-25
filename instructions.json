@@ -3,5 +3,5 @@
   "prefixes": ["LOCK", "REP", "REPE", "REPZ", "REPNE", "REPNZ", "XACQUIRE", "XRELEASE", "BND", "NOBND"],
   "nasm_instructions": ["DB", "DW", "DD", "DQ", "DT", "DO", "DY", "DZ", "RESB", "RESW", "RESD", "RESQ", "REST", "RESO", "RESY", "RESZ", "INCBIN", "EQU"],
   "nasm_prefixes": ["TIMES"],
-  "directives": ["SECTION", "ORG"]
+  "directives": ["SECTION", "ORG", "BITS"]
 }

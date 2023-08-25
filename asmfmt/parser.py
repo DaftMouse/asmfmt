@@ -1,10 +1,12 @@
+import traceback
+
 from .token import Tokenizer, TokenType, Token, UnexpectedCharException
 from .items import *
 
 
 class SyntaxErrorException(Exception):
-    def __init__(self, unexpected_token: Token):
-        super().__init__(f"Unexpected token {unexpected_token} at {unexpected_token.location}")
+    def __init__(self, expected: TokenType, got: Token):
+        super().__init__(f"Expected {expected}, got {got} at {got.location}")
 
 class Parser:
     def __init__(self, input_file):
@@ -19,7 +21,7 @@ class Parser:
 
     def expect(self, token_type: TokenType):
         if not self.cur_token.is_type(token_type):
-            raise SyntaxErrorException(self.cur_token)
+            raise SyntaxErrorException(token_type, self.cur_token)
 
     def parse_expression(self):
         expr = None
@@ -74,8 +76,6 @@ class Parser:
 
         arg = self.parse_expression()
 
-        self.expect(TokenType.NEWLINE)
-        self.eat()
         return Directive(directive, arg)
 
     def parse_macro(self):
@@ -90,24 +90,11 @@ class Parser:
             self.eat()
 
             value = self.parse_expression()
-
-            self.expect(TokenType.NEWLINE)
-            self.eat()
             return MacroDefineLine(name, value)
 
         return None
 
-    def parse_line(self):
-        if self.cur_token.is_type(TokenType.PERCENT):
-            return self.parse_macro()
-        
-        if self.cur_token.is_type(TokenType.DIRECTIVE):
-            return self.parse_directive()
-        
-        if self.cur_token.is_type(TokenType.NEWLINE):
-            self.eat()
-            return CodeLine(None, None, None)
-
+    def parse_code_line(self):
         label = None
         if self.cur_token.is_type(TokenType.IDENT):
             label = self.cur_token.ident
@@ -124,14 +111,31 @@ class Parser:
         if self.cur_token.is_type(TokenType.COMMENT):
             comment = Comment(self.cur_token.ident)
             self.eat()
+        
+        return CodeLine(label, instruction, comment)
 
+
+    def parse_line(self):
+        # Empty line
         if self.cur_token.is_type(TokenType.NEWLINE):
             self.eat()
+            return CodeLine(None, None, None)
 
-        if label is None and comment is None and instruction is None:
-            raise SyntaxErrorException(self.cur_token)
+        line = None
+        
+        match self.cur_token._type:
+            case TokenType.PERCENT:
+                line = self.parse_macro()
+            case TokenType.DIRECTIVE:
+                line = self.parse_directive()
+            case _:
+                line = self.parse_code_line()
 
-        return CodeLine(label, instruction, comment)
+        self.expect(TokenType.NEWLINE)
+        self.eat()
+
+        return line
+
 
     def parse(self):
         lines = []
@@ -141,10 +145,10 @@ class Parser:
                 l = self.parse_line()
                 lines.append(l)
             except SyntaxErrorException as e:
-                lines.append("ERROR: " + str(e))
+                lines.append("ERROR: " + str(e) + "\n" + traceback.format_exc())
                 return lines
             except UnexpectedCharException as e:
-                lines.append("ERROR: " + str(e))
+                lines.append("ERROR: " + str(e) + "\n" + traceback.format_exc())
                 return lines
 
         return lines

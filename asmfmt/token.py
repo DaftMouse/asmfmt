@@ -116,7 +116,7 @@ class Tokenizer:
         return char.isalpha() or char == '.'
 
     def is_ident_char(self, char):
-        return char.isalnum()
+        return char.isalnum() or char == '_'
 
     def next_token(self):
         if self.cur_char == '\0':

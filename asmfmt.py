@@ -10,8 +10,9 @@ def main(args):
     with open(file) as f:
         p = Parser(f)
         lines = p.parse()
-        w = Writer(lines)
-        w.write_to_stdout()
+
+        for l in lines:
+            print(l)
 
 
 if __name__ == '__main__':

@@ -97,7 +97,20 @@ class CodeLine:
         self.comment = comment
 
     def __str__(self):
-        return f"{self.label}:\t{self.instruction}\t{self.comment}"
+        s = ""
+
+        if self.label:
+            s += self.label + ": "
+        else:
+            s += '\t'
+
+        if self.instruction:
+            s += str(self.instruction) + " "
+
+        if self.comment:
+            s += str(self.comment)
+
+        return s
 
     def format(self):
         formatted = ""

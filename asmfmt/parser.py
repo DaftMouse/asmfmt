@@ -1,4 +1,4 @@
-from .token import Tokenizer, TokenType, Token
+from .token import Tokenizer, TokenType, Token, UnexpectedCharException
 from .items import *
 
 
@@ -108,7 +108,15 @@ class Parser:
     def parse(self):
         lines = []
         while not self.cur_token.is_type(TokenType.EOF):
-            l = self.parse_line()
-            lines.append(l)
+
+            try:
+                l = self.parse_line()
+                lines.append(l)
+            except SyntaxErrorException as e:
+                lines.append("ERROR: " + str(e))
+                return lines
+            except UnexpectedCharException as e:
+                lines.append("ERROR: " + str(e))
+                return lines
 
         return lines

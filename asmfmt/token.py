@@ -2,6 +2,9 @@ from enum import Enum
 import json
 import os
 
+class UnexpectedCharException(Exception):
+    def __init__(self, unexpected_char: str, location: (int, int)):
+        super().__init__(f"Unexpected {unexpected_char} at line {location[0]}, col {location[1]}")
 
 class TokenType(Enum):
     IDENT = "IDENT"
@@ -185,6 +188,4 @@ class Tokenizer:
             self.eat()
             return tok
 
-        print(
-            f"Unexpected {self.cur_char} on line {self.cur_line}, col {self.cur_col}")
-        exit(1)
+        raise UnexpectedCharException(self.cur_char, (self.cur_line, self.cur_col))

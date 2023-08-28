@@ -119,6 +119,30 @@ class Parser:
         
         return CodeLine(label, instruction, comment)
 
+    def parse_struc(self):
+        assert self.cur_token.is_type(TokenType.IDENT) \
+               and self.cur_token.ident == "struc"
+        self.eat()
+
+        self.expect(TokenType.IDENT)
+        name = self.cur_token.ident
+        self.eat()
+
+        self.expect(TokenType.NEWLINE)
+        self.eat()
+
+        def endstruc():
+            return self.cur_token.is_type(TokenType.IDENT) \
+                and self.cur_token.ident == "endstruc"
+        
+        fields = []
+        while not endstruc(): 
+            line = self.parse_line()
+            fields.append(line)
+
+        self.eat() # endstruc
+
+        return StructDefinition(name, fields)
 
     def parse_line(self):
         # Empty line
@@ -133,6 +157,11 @@ class Parser:
                 line = self.parse_macro()
             case TokenType.DIRECTIVE:
                 line = self.parse_directive()
+            case TokenType.IDENT:
+                if self.cur_token.ident == "struc":
+                    line = self.parse_struc()
+                else:
+                    line = self.parse_code_line()
             case _:
                 line = self.parse_code_line()
 

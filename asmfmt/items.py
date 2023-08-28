@@ -160,3 +160,15 @@ class MacroDefineLine:
     def __str__(self):
         return f"MacroDefine({self.name}, {self.value})"
         
+
+class StructDefinition:
+    def __init__(self, name: str, fields: [CodeLine]):
+        self.name = name
+        self.fields = fields
+
+    def __str__(self):
+        fields = map(lambda x: "\t" + str(x).strip(), self.fields)
+        fields = ",\n".join(fields)
+        return f"Struct({self.name},\n" \
+            + fields \
+            + "\n)"

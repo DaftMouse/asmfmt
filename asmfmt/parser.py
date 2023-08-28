@@ -95,6 +95,11 @@ class Parser:
         return None
 
     def parse_code_line(self):
+        assert self.cur_token._type in [TokenType.IDENT, \
+                                        TokenType.INSTRUCTION, \
+                                        TokenType.INSTRUCTION_PREFIX, \
+                                        TokenType.COMMENT]
+        
         label = None
         if self.cur_token.is_type(TokenType.IDENT):
             label = self.cur_token.ident

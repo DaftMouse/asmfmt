@@ -117,10 +117,10 @@ class Tokenizer:
         return self.make_token(TokenType.NUMBER, ident)
 
     def is_ident_stater(self, char):
-        return char.isalpha() or char == '.'
+        return char.isalpha() or char in ['_', '.']
 
     def is_ident_char(self, char):
-        return char.isalnum() or char == '_'
+        return char.isalnum() or char in ['_', '.']
 
     def next_token(self):
         if self.cur_char == '\0':

@@ -50,8 +50,11 @@ class Parser:
             case TokenType.NUMBER:
                 expr = NumberExpression(self.cur_token.ident)
                 self.eat()
+            case TokenType.CHAR_LITERAL:
+                expr = CharLiteralExpression(self.cur_token.ident)
+                self.eat()
             case _:
-                raise SyntaxErrorException(self.cur_token)
+                raise SyntaxErrorException("expression", self.cur_token)
 
         return expr
 

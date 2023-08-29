@@ -20,6 +20,7 @@ class TokenType(Enum):
     INSTRUCTION_PREFIX = "INSTRUCTION_PREFIX"
     DIRECTIVE = "DIRECTIVE"
     PERCENT = 'PERCENT'
+    CHAR_LITERAL = "CHAR_LITERAL"
 
 
 class Token:
@@ -166,6 +167,23 @@ class Tokenizer:
                 tok = self.make_token(TokenType.CLOSE_BRACKET)
             case '%':
                 tok = self.make_token(TokenType.PERCENT)
+
+        # tokenize char literals
+        if self.cur_char == '\'':
+            self.eat() # '
+
+            if self.cur_char == '\\':
+                lit = self.cur_char + self.peek_char
+                self.eat() # \\
+                self.eat() # char
+            else:
+                lit = self.cur_char
+                self.eat()
+
+            if self.cur_char != '\'':
+                raise UnexpectedCharException(self.cur_char, (self.cur_line, self.cur_col))
+            
+            tok = self.make_token(TokenType.CHAR_LITERAL, lit)
 
         # tokenize comments
         if self.cur_char == ';':

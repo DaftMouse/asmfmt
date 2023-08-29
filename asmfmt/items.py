@@ -104,6 +104,12 @@ class EffectiveAddressExpression:
     def __str__(self):
         return f"EffectiveAddressExpression({self._type}, {self.expr})"
 
+class CharLiteralExpression(Expression):
+    def __init__(self, char):
+        self.char = char
+
+    def __str__(self):
+        return f"CharLiteralExpression({repr(self.char)})"
 
 class CodeLine:
     def __init__(self, label, instruction, comment):

@@ -23,13 +23,30 @@ class Parser:
         if not self.cur_token.is_type(token_type):
             raise SyntaxErrorException(token_type, self.cur_token)
 
+    def parse_effective_address(self):
+        assert self.cur_token.is_type(TokenType.OPEN_BRACKET)
+        self.eat() # [
+        value = self.parse_expression()
+        self.expect(TokenType.CLOSE_BRACKET)
+        self.eat() # ]
+
+        return value
+
     def parse_expression(self):
         expr = None
 
         match self.cur_token._type:
             case TokenType.IDENT:
-                expr = IdentExpression(self.cur_token.ident)
-                self.eat()
+                ident = self.cur_token.ident
+
+                if ident.lower() in ["byte", "word", "dword", "qword"]:
+                    self.eat()
+                    self.expect(TokenType.OPEN_BRACKET)
+                    addr = self.parse_effective_address()
+                    expr = EffectiveAddressExpression(ident, addr)
+                else:
+                    expr = IdentExpression(ident)
+                    self.eat()
             case TokenType.NUMBER:
                 expr = NumberExpression(self.cur_token.ident)
                 self.eat()

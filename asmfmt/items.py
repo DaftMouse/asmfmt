@@ -96,6 +96,14 @@ class NumberExpression(Expression):
     def format(self):
         return self.number
 
+class EffectiveAddressExpression:
+    def __init__(self, _type, expr):
+        self._type = _type
+        self.expr = expr
+
+    def __str__(self):
+        return f"EffectiveAddressExpression({self._type}, {self.expr})"
+
 
 class CodeLine:
     def __init__(self, label, instruction, comment):

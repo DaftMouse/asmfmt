@@ -47,6 +47,9 @@ class Parser:
                 else:
                     lhs = IdentExpression(ident)
                     self.eat()
+            case TokenType.OPEN_BRACKET:
+                addr = self.parse_effective_address()
+                lhs = EffectiveAddressExpression(None, addr)
             case TokenType.NUMBER:
                 lhs = NumberExpression(self.cur_token.ident)
                 self.eat()

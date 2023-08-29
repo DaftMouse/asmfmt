@@ -120,6 +120,14 @@ class BinaryExpression:
     def __str__(self):
         return f"BinaryExpression({self.op}, {self.lhs}, {self.rhs})"
     
+class UnaryExpression:
+    def __init__(self, op, expr):
+        self.op = op
+        self.expr = expr
+
+    def __str__(self):
+        return f"UnaryExpression({self.op}, {self.expr})"
+
 class CodeLine:
     def __init__(self, label, instruction, comment):
         self.label = label

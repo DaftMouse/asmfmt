@@ -53,6 +53,10 @@ class Parser:
             case TokenType.CHAR_LITERAL:
                 lhs = CharLiteralExpression(self.cur_token.ident)
                 self.eat()
+            case TokenType.MINUS:
+                self.eat()
+                expr = self.parse_expression()
+                lhs = UnaryExpression(TokenType.MINUS, expr)
             case _:
                 raise SyntaxErrorException("expression", self.cur_token)
 

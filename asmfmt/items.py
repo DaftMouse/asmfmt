@@ -14,6 +14,9 @@ class InstructionPrefix:
     def __init__(self, prefix):
         self.prefix = prefix
 
+    def __str__(self):
+        return str(self.prefix)
+
     def format(self):
         return self.prefix
 
@@ -40,7 +43,11 @@ class Instruction:
         for op in self.operands:
             ops.append(str(op))
 
-        return f"{self.instruction} {ops}"
+        p = ""
+        if self.prefix:
+            p += str(self.prefix) + " "
+
+        return p + f"{self.instruction} {ops}"
 
     def format(self):
         prefix = ""

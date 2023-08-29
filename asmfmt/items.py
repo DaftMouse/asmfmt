@@ -111,6 +111,15 @@ class CharLiteralExpression(Expression):
     def __str__(self):
         return f"CharLiteralExpression({repr(self.char)})"
 
+class BinaryExpression:
+    def __init__(self, op, lhs, rhs):
+        self.op = op
+        self.lhs = lhs
+        self.rhs = rhs
+
+    def __str__(self):
+        return f"BinaryExpression({self.op}, {self.lhs}, {self.rhs})"
+    
 class CodeLine:
     def __init__(self, label, instruction, comment):
         self.label = label

@@ -33,7 +33,7 @@ class Parser:
         return value
 
     def parse_expression(self):
-        expr = None
+        lhs = None
 
         match self.cur_token._type:
             case TokenType.IDENT:
@@ -43,20 +43,27 @@ class Parser:
                     self.eat()
                     self.expect(TokenType.OPEN_BRACKET)
                     addr = self.parse_effective_address()
-                    expr = EffectiveAddressExpression(ident, addr)
+                    lhs = EffectiveAddressExpression(ident, addr)
                 else:
-                    expr = IdentExpression(ident)
+                    lhs = IdentExpression(ident)
                     self.eat()
             case TokenType.NUMBER:
-                expr = NumberExpression(self.cur_token.ident)
+                lhs = NumberExpression(self.cur_token.ident)
                 self.eat()
             case TokenType.CHAR_LITERAL:
-                expr = CharLiteralExpression(self.cur_token.ident)
+                lhs = CharLiteralExpression(self.cur_token.ident)
                 self.eat()
             case _:
                 raise SyntaxErrorException("expression", self.cur_token)
 
-        return expr
+        if self.cur_token.is_type(TokenType.PLUS) or \
+           self.cur_token.is_type(TokenType.MINUS):
+            op = self.cur_token
+            self.eat()
+            rhs = self.parse_expression()
+            return BinaryExpression(op, lhs, rhs)
+
+        return lhs
 
     def parse_prefix(self):
         if self.cur_token.ident.upper() == "TIMES":

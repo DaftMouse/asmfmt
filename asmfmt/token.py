@@ -21,6 +21,8 @@ class TokenType(Enum):
     DIRECTIVE = "DIRECTIVE"
     PERCENT = 'PERCENT'
     CHAR_LITERAL = "CHAR_LITERAL"
+    PLUS = "PLUS"
+    MINUS = "MINUS"
 
 
 class Token:
@@ -167,6 +169,10 @@ class Tokenizer:
                 tok = self.make_token(TokenType.CLOSE_BRACKET)
             case '%':
                 tok = self.make_token(TokenType.PERCENT)
+            case '-':
+                tok = self.make_token(TokenType.MINUS)
+            case '+':
+                tok = self.make_token(TokenType.PLUS)
 
         # tokenize char literals
         if self.cur_char == '\'':

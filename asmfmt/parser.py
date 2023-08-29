@@ -60,11 +60,19 @@ class Parser:
                 self.eat()
                 expr = self.parse_expression()
                 lhs = UnaryExpression(TokenType.MINUS, expr)
+            case TokenType.OPEN_PAREN:
+                self.eat()
+                expr = self.parse_expression()
+                self.expect(TokenType.CLOSE_PAREN)
+                self.eat()
+
+                lhs = ParenExpression(expr)
             case _:
                 raise SyntaxErrorException("expression", self.cur_token)
 
-        if self.cur_token.is_type(TokenType.PLUS) or \
-           self.cur_token.is_type(TokenType.MINUS):
+        if self.cur_token._type in [TokenType.MINUS,
+                                    TokenType.PLUS,
+                                    TokenType.FORWARD_SLASH]:
             op = self.cur_token
             self.eat()
             rhs = self.parse_expression()

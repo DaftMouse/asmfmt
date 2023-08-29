@@ -128,6 +128,13 @@ class UnaryExpression:
     def __str__(self):
         return f"UnaryExpression({self.op}, {self.expr})"
 
+class ParenExpression:
+    def __init__(self, expr):
+        self.expr = expr
+
+    def __str__(self):
+        return f"ParenExpression({self.expr})"
+
 class CodeLine:
     def __init__(self, label, instruction, comment):
         self.label = label

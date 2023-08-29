@@ -23,6 +23,9 @@ class TokenType(Enum):
     CHAR_LITERAL = "CHAR_LITERAL"
     PLUS = "PLUS"
     MINUS = "MINUS"
+    FORWARD_SLASH = "FORWARD_SLASH"
+    OPEN_PAREN = "OPEN_PAREN"
+    CLOSE_PAREN = "CLOSE_PAREN"
 
 
 class Token:
@@ -173,6 +176,12 @@ class Tokenizer:
                 tok = self.make_token(TokenType.MINUS)
             case '+':
                 tok = self.make_token(TokenType.PLUS)
+            case '/':
+                tok = self.make_token(TokenType.FORWARD_SLASH)
+            case '(':
+                tok = self.make_token(TokenType.OPEN_PAREN)
+            case ')':
+                tok = self.make_token(TokenType.CLOSE_PAREN)
 
         # tokenize char literals
         if self.cur_char == '\'':

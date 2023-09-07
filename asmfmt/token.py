@@ -26,6 +26,7 @@ class TokenType(Enum):
     OPEN_PAREN         = "OPEN_PAREN"
     PERCENT            = 'PERCENT'
     PLUS               = "PLUS"
+    SHIFT_LEFT         = "SHIFT_LEFT"
 
 
 class Token:
@@ -182,6 +183,10 @@ class Tokenizer:
                 tok = self.make_token(TokenType.OPEN_PAREN)
             case ')':
                 tok = self.make_token(TokenType.CLOSE_PAREN)
+
+        if self.cur_char == '<' and self.peek_char == '<':
+            tok = self.make_token(TokenType.SHIFT_LEFT)
+            self.eat()
 
         # tokenize char literals
         if self.cur_char == '\'':

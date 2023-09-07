@@ -217,3 +217,15 @@ class StructDefinition:
         return f"Struct({self.name},\n" \
             + fields \
             + "\n)"
+
+class StructInstantiation:
+    def __init__(self, name: str, fields: [(str, Instruction)]):
+        self.name = name
+        self.fields = fields
+
+    def __str__(self):
+        fields = map(lambda x: "\tat " + str(x[0]).strip() + ", " + str(x[1]), self.fields)
+        fields = "\n".join(fields)
+        return f"IStruct({self.name},\n" \
+            + fields \
+            + "\n)"

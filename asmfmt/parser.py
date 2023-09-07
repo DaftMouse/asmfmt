@@ -163,6 +163,47 @@ class Parser:
         
         return CodeLine(label, instruction, comment)
 
+    def parse_istruc(self):
+        assert self.cur_token.is_type(TokenType.IDENT) \
+               and self.cur_token.ident == "istruc"
+        self.eat()
+
+        self.expect(TokenType.IDENT)
+        name = self.cur_token.ident
+        self.eat()
+
+        self.expect(TokenType.NEWLINE)
+        self.eat()
+
+        def endstruc():
+            return self.cur_token.is_type(TokenType.IDENT) \
+                and self.cur_token.ident == "iend"
+        
+        fields = []
+        while not endstruc(): 
+            self.expect(TokenType.IDENT)
+            if self.cur_token.ident != "at":
+                raise SyntaxErrorException("at", self.cur_token)
+
+            self.eat()
+            self.expect(TokenType.IDENT)
+            field = self.cur_token.ident
+            self.eat()
+
+            self.expect(TokenType.COMMA)
+            self.eat()
+
+            data_definition = self.parse_instruction()
+
+            self.expect(TokenType.NEWLINE)
+            self.eat()
+            
+            fields.append((field, data_definition))
+
+        self.eat() # endstruc
+
+        return StructInstantiation(name, fields)
+
     def parse_struc(self):
         assert self.cur_token.is_type(TokenType.IDENT) \
                and self.cur_token.ident == "struc"
@@ -202,10 +243,13 @@ class Parser:
             case TokenType.DIRECTIVE:
                 line = self.parse_directive()
             case TokenType.IDENT:
-                if self.cur_token.ident == "struc":
-                    line = self.parse_struc()
-                else:
-                    line = self.parse_code_line()
+                match self.cur_token.ident:
+                    case "struc":
+                        line = self.parse_struc()
+                    case "istruc":
+                        line = self.parse_istruc()
+                    case _:
+                        line = self.parse_code_line()
             case _:
                 line = self.parse_code_line()
 

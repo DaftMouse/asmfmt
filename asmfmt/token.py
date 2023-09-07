@@ -7,6 +7,7 @@ class UnexpectedCharException(Exception):
         super().__init__(f"Unexpected {unexpected_char} at line {location[0]}, col {location[1]}")
 
 class TokenType(Enum):
+    BITWISE_OR         = "BITWISE_OR"
     CHAR_LITERAL       = "CHAR_LITERAL"
     CLOSE_BRACKET      = "CLOSE_BRACKET"
     CLOSE_PAREN        = "CLOSE_PAREN"
@@ -183,6 +184,8 @@ class Tokenizer:
                 tok = self.make_token(TokenType.OPEN_PAREN)
             case ')':
                 tok = self.make_token(TokenType.CLOSE_PAREN)
+            case '|':
+                tok = self.make_token(TokenType.BITWISE_OR)
 
         if self.cur_char == '<' and self.peek_char == '<':
             tok = self.make_token(TokenType.SHIFT_LEFT)

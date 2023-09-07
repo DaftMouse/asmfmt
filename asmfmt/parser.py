@@ -73,7 +73,8 @@ class Parser:
         if self.cur_token._type in [TokenType.MINUS,
                                     TokenType.PLUS,
                                     TokenType.FORWARD_SLASH,
-                                    TokenType.SHIFT_LEFT]:
+                                    TokenType.SHIFT_LEFT,
+                                    TokenType.BITWISE_OR]:
             op = self.cur_token
             self.eat()
             rhs = self.parse_expression()

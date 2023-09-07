@@ -15,6 +15,8 @@ class TokenType(Enum):
     COMMA              = "COMMA"
     COMMENT            = "COMMENT"
     DIRECTIVE          = "DIRECTIVE"
+    DOLLAR_SIGN        = "DOLLAR_SIGN"
+    DOUBLE_DOLLAR_SIGN = "DOUBLE_DOLLAR_SIGN"
     EOF                = "EOF"
     FORWARD_SLASH      = "FORWARD_SLASH"
     IDENT              = "IDENT"
@@ -187,6 +189,12 @@ class Tokenizer:
                 tok = self.make_token(TokenType.CLOSE_PAREN)
             case '|':
                 tok = self.make_token(TokenType.BITWISE_OR)
+            case '$':
+                if self.peek_char == '$':
+                    tok = self.make_token(TokenType.DOUBLE_DOLLAR_SIGN)
+                    self.eat()
+                else:
+                    tok = self.make_token(TokenType.DOLLAR_SIGN)
 
         if self.cur_char == '<' and self.peek_char == '<':
             tok = self.make_token(TokenType.SHIFT_LEFT)

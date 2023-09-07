@@ -70,6 +70,12 @@ class Parser:
             case TokenType.STRING_LITERAL:
                 lhs = StringLiteralExpression(self.cur_token.ident)
                 self.eat()
+            case TokenType.DOLLAR_SIGN:
+                lhs = IdentExpression("$")
+                self.eat()
+            case TokenType.DOUBLE_DOLLAR_SIGN:
+                lhs = IdentExpression("$$")
+                self.eat()
             case _:
                 raise SyntaxErrorException("expression", self.cur_token)
 

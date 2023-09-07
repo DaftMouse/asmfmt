@@ -111,6 +111,13 @@ class CharLiteralExpression(Expression):
     def __str__(self):
         return f"CharLiteralExpression({repr(self.char)})"
 
+class StringLiteralExpression(Expression):
+    def __init__(self, string):
+        self.string = string
+
+    def __str__(self):
+        return f"StringLiteralExpression({repr(self.string)})"
+
 class BinaryExpression:
     def __init__(self, op, lhs, rhs):
         self.op = op

@@ -28,6 +28,7 @@ class TokenType(Enum):
     PERCENT            = 'PERCENT'
     PLUS               = "PLUS"
     SHIFT_LEFT         = "SHIFT_LEFT"
+    STRING_LITERAL     = "STRING_LITERAL"
 
 
 class Token:
@@ -207,6 +208,18 @@ class Tokenizer:
                 raise UnexpectedCharException(self.cur_char, (self.cur_line, self.cur_col))
             
             tok = self.make_token(TokenType.CHAR_LITERAL, lit)
+
+        # tokenize string literals
+        # TODO: Handle escaped quotes inside string
+        if self.cur_char == '"':
+            self.eat()
+            ident = ""
+
+            while self.cur_char != '"':
+                ident += self.cur_char
+                self.eat()
+
+            tok = self.make_token(TokenType.STRING_LITERAL, ident)
 
         # tokenize comments
         if self.cur_char == ';':

@@ -67,6 +67,9 @@ class Parser:
                 self.eat()
 
                 lhs = ParenExpression(expr)
+            case TokenType.STRING_LITERAL:
+                lhs = StringLiteralExpression(self.cur_token.ident)
+                self.eat()
             case _:
                 raise SyntaxErrorException("expression", self.cur_token)
 

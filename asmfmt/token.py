@@ -7,25 +7,25 @@ class UnexpectedCharException(Exception):
         super().__init__(f"Unexpected {unexpected_char} at line {location[0]}, col {location[1]}")
 
 class TokenType(Enum):
-    IDENT = "IDENT"
-    COMMA = "COMMA"
-    COLON = "COLON"
-    NUMBER = "NUMBER"
-    INSTRUCTION = "INSTRUCTION"
-    NEWLINE = "NEWLINE"
-    EOF = "EOF"
-    OPEN_BRACKET = "OPEN_BRACKET"
-    CLOSE_BRACKET = "CLOSE_BRACKET"
-    COMMENT = "COMMENT"
+    CHAR_LITERAL       = "CHAR_LITERAL"
+    CLOSE_BRACKET      = "CLOSE_BRACKET"
+    CLOSE_PAREN        = "CLOSE_PAREN"
+    COLON              = "COLON"
+    COMMA              = "COMMA"
+    COMMENT            = "COMMENT"
+    DIRECTIVE          = "DIRECTIVE"
+    EOF                = "EOF"
+    FORWARD_SLASH      = "FORWARD_SLASH"
+    IDENT              = "IDENT"
+    INSTRUCTION        = "INSTRUCTION"
     INSTRUCTION_PREFIX = "INSTRUCTION_PREFIX"
-    DIRECTIVE = "DIRECTIVE"
-    PERCENT = 'PERCENT'
-    CHAR_LITERAL = "CHAR_LITERAL"
-    PLUS = "PLUS"
-    MINUS = "MINUS"
-    FORWARD_SLASH = "FORWARD_SLASH"
-    OPEN_PAREN = "OPEN_PAREN"
-    CLOSE_PAREN = "CLOSE_PAREN"
+    MINUS              = "MINUS"
+    NEWLINE            = "NEWLINE"
+    NUMBER             = "NUMBER"
+    OPEN_BRACKET       = "OPEN_BRACKET"
+    OPEN_PAREN         = "OPEN_PAREN"
+    PERCENT            = 'PERCENT'
+    PLUS               = "PLUS"
 
 
 class Token:

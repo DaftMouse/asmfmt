@@ -212,6 +212,14 @@ class MacroDefineLine:
     def __str__(self):
         return f"MacroDefine({self.name}, {self.value})"
         
+class AssignMacro:
+    def __init__(self, name, expr):
+        self.name = name
+        self.expr = expr
+
+    def __str__(self):
+        return f"AssignMacro({self.name}, {self.expr})"
+
 
 class StructDefinition:
     def __init__(self, name: str, fields: [CodeLine]):

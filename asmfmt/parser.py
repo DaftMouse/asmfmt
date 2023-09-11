@@ -135,15 +135,25 @@ class Parser:
         self.eat() # %
         self.expect(TokenType.IDENT)
 
-        if self.cur_token.ident == "define":
-            self.eat() # define
+        match self.cur_token.ident:
+            case "define":
+                self.eat() # define
 
-            self.expect(TokenType.IDENT)
-            name = self.cur_token.ident
-            self.eat()
+                self.expect(TokenType.IDENT)
+                name = self.cur_token.ident
+                self.eat()
 
-            value = self.parse_expression()
-            return MacroDefineLine(name, value)
+                value = self.parse_expression()
+                return MacroDefineLine(name, value)
+            case "assign":
+                self.eat() # assign
+
+                self.expect(TokenType.IDENT)
+                name = self.cur_token.ident
+                self.eat()
+
+                expr = self.parse_expression()
+                return AssignMacro(name, expr)
 
         return None
 

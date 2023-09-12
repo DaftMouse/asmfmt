@@ -174,8 +174,8 @@ class Parser:
                 # be messed up
                 self.eat()
                 return WarningMacro(message)
-
-        return None
+            case _:
+                raise SyntaxErrorException("macro", self.cur_token)
 
     def parse_code_line(self):
         assert self.cur_token._type in [TokenType.IDENT, \

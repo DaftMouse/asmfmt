@@ -12,12 +12,10 @@ class Parser:
     def __init__(self, input_file):
         self.tokenizer = Tokenizer(input_file)
         self.cur_token = self.tokenizer.next_token()
-        self.peek_token = self.tokenizer.next_token()
         self.parsed_lines = []
 
     def eat(self):
-        self.cur_token = self.peek_token
-        self.peek_token = self.tokenizer.next_token()
+        self.cur_token = self.tokenizer.next_token()
 
     def expect(self, token_type: TokenType):
         if not self.cur_token.is_type(token_type):

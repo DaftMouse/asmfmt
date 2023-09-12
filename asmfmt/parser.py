@@ -152,6 +152,28 @@ class Parser:
 
                 expr = self.parse_expression()
                 return AssignMacro(name, expr)
+            case "warning":
+                # TODO: So.. this is akward, the message doesn't have to be a
+                # string literal, so we have to poke into the tokenizer to handle
+                # that case, maybe the whole macro handling should happend there
+                # anyway? I'm not sure, doing it the hacky way for now
+                # TODO: Handle the case where it is a string literal
+
+                # The tokenizer is at the whitespace after the `%warning`, skip
+                # any extra whitespace
+                while self.tokenizer.cur_char.isspace():
+                    self.tokenizer.eat()
+
+                # Now read the rest of the line as the message
+                message = ""
+                while self.tokenizer.cur_char != '\n':
+                    message += self.tokenizer.cur_char
+                    self.tokenizer.eat()
+
+                # Eat the `warning` token now and the Tokenizer's state shouldn't
+                # be messed up
+                self.eat()
+                return WarningMacro(message)
 
         return None
 

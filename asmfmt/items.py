@@ -220,6 +220,13 @@ class AssignMacro:
     def __str__(self):
         return f"AssignMacro({self.name}, {self.expr})"
 
+class WarningMacro:
+    def __init__(self, message):
+        self.message = message
+
+    def __str__(self):
+        return f"WarningMacro({self.message})"
+
 
 class StructDefinition:
     def __init__(self, name: str, fields: [CodeLine]):
